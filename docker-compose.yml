@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=pet_utopia_password
+      - DB_NAME=pet_utopia
+      - PORT=3000
+      - JWT_SECRET=pet_utopia_secret_key_2026
+    depends_on:
+      - db
+    networks:
+      - pet-utopia-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - pet-utopia-network
+
+  db:
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=pet_utopia_password
+      - MYSQL_DATABASE=pet_utopia
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - pet-utopia-network
+
+networks:
+  pet-utopia-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
